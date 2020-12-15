@@ -10,7 +10,7 @@ var items = {};
 exports.create = (text, callback) => {
   counter.getNextUniqueId((err, id) => {
     if (err) {
-      // something
+      throw new error('Error');
     } else {
       fs.writeFile(path.join(exports.dataDir, `${id}.txt`), text, (err) => {
         if (err) {
@@ -30,7 +30,7 @@ exports.create = (text, callback) => {
 exports.readAll = (callback) => {
   fs.readdir(exports.dataDir, (err, files) => {
     if (err) {
-      // something
+      throw new error('Error');
     } else {
       const data = files.map((file) => ({
         id: path.parse(file).name,
