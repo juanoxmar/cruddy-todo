@@ -2,6 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const _ = require('underscore');
 const counter = require('./counter');
+const Promise = require('bluebird');
+
+Promise.promisifyAll(fs);
 
 var items = {};
 
@@ -28,17 +31,53 @@ exports.create = (text, callback) => {
 
 
 exports.readAll = (callback) => {
-  fs.readdir(exports.dataDir, (err, files) => {
-    if (err) {
-      callback(new Error('Error'));
-    } else {
-      const data = files.map((file) => ({
-        id: path.parse(file).name,
-        text: path.parse(file).name
-      }));
-      callback(null, data);
-    }
-  });
+  return fs.readdirAsync(exports.dataDir)
+    .then((files) => {
+      const readFiles = files.map((item) => {
+        return fs.readFileAsync(path.join(exports.dataDir, item))
+          .then((data) => {
+            return {
+              id: path.parse(item).name,
+              text: data.toString()
+            };
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      });
+      return Promise.all(readFiles);
+    })
+    .then((arr) => {
+      callback(null, arr);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
+exports.readAll = (callback) => {
+  return fs.readdirAsync(exports.dataDir)
+    .then((files) => {
+      const readFiles = files.map((item) => {
+        return fs.readFileAsync(path.join(exports.dataDir, item))
+          .then((data) => {
+            return {
+              id: path.parse(item).name,
+              text: data.toString()
+            };
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      });
+      return Promise.all(readFiles);
+    })
+    .then((arr) => {
+      callback(null, arr);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };
 
 exports.readOne = (id, callback) => {
